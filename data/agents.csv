@@ -1,0 +1,31 @@
+nom,prénom,service,grade,jours_congés_pris,solde_congés,habilitations,date_dernière_habilitation
+Vincent,Céline,Gestion publique,Cadre B,13,10,Accès système | Données sensibles,25/10/2022
+Roux,Catherine,RH,Cadre B,14,7,Accès système | Paie confidentielle | Données personnelles,24/07/2022
+Lefevre,Laurence,Fiscalité,Titulaire,22,7,Secret défense,13/09/2022
+Fournier,Laurence,Communication,Contractuel,17,5,Données personnelles | Paie confidentielle,08/04/2023
+David,Catherine,Contrôle fiscal,Cadre B,7,13,Secret défense | Données personnelles,21/10/2023
+Leger,Thierry,Fiscalité,Contractuel,16,2,Données sensibles | Accès système | Données personnelles,14/12/2022
+Bonnet,Monique,Fiscalité,Cadre A,8,18,Données sensibles,02/09/2023
+Bertrand,Vincent,Gestion publique,Cadre B,5,6,Secret défense,21/10/2023
+Fontaine,Vincent,Communication,Contractuel,16,1,Données personnelles,23/09/2022
+Roux,Philippe,Gestion publique,Cadre A,15,2,Secret défense | Paie confidentielle,08/08/2022
+Bonnet,Laurence,Gestion publique,Contractuel,11,14,Données personnelles,24/04/2024
+Garcia,Laurent,Fiscalité,Cadre A,16,14,Données sensibles,26/08/2022
+Roux,Céline,RH,Cadre A,16,2,Données sensibles | Accès système,26/03/2023
+Blanc,Marie,Contrôle fiscal,Contractuel,7,9,Paie confidentielle | Accès système,25/03/2023
+Garcia,Nathalie,Fiscalité,Titulaire,10,5,Secret défense,11/11/2023
+Blanc,Bernard,RH,Cadre B,21,3,Secret défense | Données personnelles | Données sensibles,25/07/2023
+Blanc,Marie,Contrôle fiscal,Titulaire,15,9,Données sensibles | Données personnelles,29/06/2022
+Blanc,Philippe,Contrôle fiscal,Titulaire,22,18,Données personnelles | Paie confidentielle | Données sensibles,11/12/2022
+Vincent,Bernard,Gestion publique,Contractuel,6,4,Secret défense | Données personnelles | Données sensibles,20/08/2023
+Dumas,Vincent,Communication,Cadre B,7,3,Données personnelles | Paie confidentielle | Accès système,16/03/2024
+Moreau,Claude,Fiscalité,Contractuel,23,0,Paie confidentielle,02/01/2023
+Garcia,Catherine,Gestion publique,Titulaire,23,15,Secret défense | Accès système | Données sensibles,04/06/2024
+Bonnet,Isabelle,Gestion publique,Cadre A,15,16,Données sensibles | Secret défense | Accès système,05/08/2022
+Leclerc,Laurence,Fiscalité,Titulaire,12,8,Paie confidentielle | Accès système | Données personnelles,17/03/2024
+Bertrand,Philippe,Gestion publique,Contractuel,7,5,Données personnelles | Accès système,10/10/2023
+Michel,Marie,Gestion publique,Titulaire,21,5,Paie confidentielle | Données sensibles | Accès système,17/04/2024
+Girard,Sophie,Contrôle fiscal,Cadre A,20,5,Données sensibles | Accès système | Données personnelles,12/05/2024
+Durand,François,Fiscalité,Contractuel,20,16,Données personnelles | Accès système,01/09/2023
+Moreau,Claude,Contrôle fiscal,Cadre B,18,13,Accès système | Données sensibles,08/12/2022
+Renault,Vincent,Contrôle fiscal,Titulaire,16,13,Accès système | Secret défense,09/10/2022

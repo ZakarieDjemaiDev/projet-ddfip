@@ -1,0 +1,630 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Agents - DDFiP Moselle</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for("static", filename="style.css") }}">
+</head>
+<body>
+    <!-- ==================== LAYOUT ==================== -->
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">RH</div>
+                <div class="logo-text">DDFiP<br>Moselle</div>
+            </div>
+
+            <nav class="nav">
+                <a href="/" class="nav-item" onclick="navigateTo(event, "/")">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/agents" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span>Agents</span>
+                </a>
+                <a href="#" class="nav-item" onclick="openModalAdd(event)">
+                    <span class="nav-icon">➕</span>
+                    <span>Ajouter</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <small>v1.0 Pro</small>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Gestion des agents</h1>
+                    <p class="date-display">{{ date_du_jour }}</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" onclick="openModalAdd()">
+                        <span>➕</span> Ajouter un agent
+                    </button>
+                </div>
+            </header>
+
+            <!-- Contenu principal -->
+            <div class="content-wrapper">
+                <!-- Filtres et recherche -->
+                <section class="filters-section">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Rechercher par nom, prenom..." class="search-input">
+                        <span class="search-icon">🔍</span>
+                    </div>
+
+                    <div class="filters">
+                        <select id="serviceFilter" class="filter-select">
+                            <option value="">Tous les services</option>
+                            {% for service in services %}
+                            <option value="{{ service }}">{{ service }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="alertesOnlyFilter">
+                            <span>Alertes uniquement</span>
+                        </label>
+                    </div>
+
+                    <div class="export-buttons">
+                        <button class="btn btn-secondary" onclick="exportCSV()">
+                            <span>📥</span> CSV
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Tableau agents -->
+                <section class="table-section">
+                    <div class="table-header">
+                        <h2>Liste des agents</h2>
+                        <div class="table-stats">
+                            <span id="agentCount">0 agents</span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="agentsTable" class="agents-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prenom</th>
+                                    <th>Service</th>
+                                    <th>Grade</th>
+                                    <th class="text-center">Conges pris</th>
+                                    <th class="text-center">Solde</th>
+                                    <th>Habilitations</th>
+                                    <th class="text-center">Derniere hab.</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Rempli par JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button id="prevBtn" class="btn btn-small" onclick="previousPage()">Precedent</button>
+                        <span id="pageInfo" class="page-info">Page 1</span>
+                        <button id="nextBtn" class="btn btn-small" onclick="nextPage()">Suivant</button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== MODALES ==================== -->
+
+    <!-- Modal Ajouter/Modifier Agent -->
+    <div id="agentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Ajouter un agent</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="agentForm" class="agent-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom *</label>
+                        <input type="text" id="formNom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prenom *</label>
+                        <input type="text" id="formPrenom" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Service *</label>
+                        <select id="formService" required>
+                            <option value="">-- Selectionnez --</option>
+                            {% for service in services %}
+                            <option value="{{ service }}">{{ service }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Grade *</label>
+                        <select id="formGrade" required>
+                            <option value="">-- Selectionnez --</option>
+                            {% for grade in grades %}
+                            <option value="{{ grade }}">{{ grade }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Jours conges pris</label>
+                        <input type="number" id="formJoursConges" min="0" max="30" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Solde conges</label>
+                        <input type="number" id="formSolde" min="0" max="30" value="0">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Habilitations (separees par |)</label>
+                    <textarea id="formHabilitations" placeholder="Secret defense | Donnees sensibles | ..."></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Derniere habilitation (JJ/MM/AAAA)</label>
+                    <input type="text" id="formDateHab" placeholder="01/01/2024">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Valider</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation Suppression -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content modal-small">
+            <h2>Confirmation</h2>
+            <p id="confirmMessage">Voulez-vous supprimer cet agent ?</p>
+            <div class="form-actions">
+                <button class="btn btn-danger" onclick="confirmDelete()">Supprimer</button>
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== NOTIFICATIONS ==================== -->
+    <div id="notification" class="notification"></div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="{{ url_for("static", filename="script.js") }}"></script>
+
+    <script>
+        // Variables globales pour les agents
+        let agents = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingIndex = null;
+        let deleteConfirmIndex = null;
+
+        // Charger les agents au demarrage
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("[AGENTS PAGE] Initializing...");
+            loadAgents();
+            setupEventListeners();
+        });
+
+        // Charger les donnees initiales depuis le template
+        const initialAgents = {{ agents | tojson | safe }};
+        if (initialAgents && initialAgents.length > 0) {
+            agents = initialAgents;
+            displayAgents();
+            updateStats();
+            setupEventListeners();
+        } else {
+            // Charger via API si pas de donnees
+            loadAgents();
+        }
+
+        function setupEventListeners() {
+            const searchInput = document.getElementById("searchInput");
+            if (searchInput) {
+                searchInput.addEventListener("input", function() {
+                    currentPage = 1;
+                    displayAgents();
+                });
+            }
+
+            const serviceFilter = document.getElementById("serviceFilter");
+            if (serviceFilter) {
+                serviceFilter.addEventListener("change", function() {
+                    currentPage = 1;
+                    displayAgents();
+                });
+            }
+
+            const alertesFilter = document.getElementById("alertesOnlyFilter");
+            if (alertesFilter) {
+                alertesFilter.addEventListener("change", function() {
+                    currentPage = 1;
+                    displayAgents();
+                });
+            }
+
+            const agentForm = document.getElementById("agentForm");
+            if (agentForm) {
+                agentForm.addEventListener("submit", handleFormSubmit);
+            }
+
+            const modal = document.getElementById("agentModal");
+            if (modal) {
+                window.addEventListener("click", function(event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+        }
+
+        function loadAgents() {
+            fetch("/api/agents")
+                .then(response => response.json())
+                .then(data => {
+                    agents = data;
+                    displayAgents();
+                    updateStats();
+                })
+                .catch(error => {
+                    console.error("Erreur:", error);
+                    showNotification("Erreur lors du chargement des donnees", "error");
+                });
+        }
+
+        function getFilteredAgents() {
+            const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
+            const serviceFilter = document.getElementById("serviceFilter")?.value || "";
+            const alertesOnly = document.getElementById("alertesOnlyFilter")?.checked || false;
+
+            return agents.filter(agent => {
+                const searchMatch = !searchTerm ||
+                    agent.nom.toLowerCase().includes(searchTerm) ||
+                    agent.prénom.toLowerCase().includes(searchTerm);
+
+                const serviceMatch = !serviceFilter || agent.service === serviceFilter;
+                const alerteMatch = !alertesOnly || agent.a_alerte;
+
+                return searchMatch && serviceMatch && alerteMatch;
+            });
+        }
+
+        function displayAgents() {
+            const filteredAgents = getFilteredAgents();
+            const tableBody = document.getElementById("tableBody");
+
+            if (!tableBody) return;
+
+            tableBody.innerHTML = "";
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginatedAgents = filteredAgents.slice(start, start + itemsPerPage);
+
+            paginatedAgents.forEach((agent, index) => {
+                const row = createTableRow(agent, start + index);
+                tableBody.appendChild(row);
+            });
+
+            updatePagination(filteredAgents.length);
+            updateStats(filteredAgents.length);
+        }
+
+        function createTableRow(agent, originalIndex) {
+            const row = document.createElement("tr");
+            if (agent.a_alerte) {
+                row.classList.add("alert-row");
+            }
+
+            const soldeClass = agent.alerte_solde ? "alert-solde" : "";
+            const habClass = agent.alerte_habilitation ? "alert-hab" : "";
+            const serviceBadgeClass = agent.service.toLowerCase().replace(/\s/g, "-").replace(/é/g, "e").replace(/ç/g, "c");
+
+            row.innerHTML = `
+                <td><strong>${agent.nom}</strong></td>
+                <td>${agent.prénom}</td>
+                <td><span class="badge badge-${serviceBadgeClass}">${agent.service}</span></td>
+                <td>${agent.grade}</td>
+                <td class="text-center">${agent.jours_congés_pris}</td>
+                <td class="text-center ${soldeClass}">
+                    ${agent.solde_congés}
+                    ${agent.alerte_solde ? '<span class="alert"> !</span>' : ''}
+                </td>
+                <td><small>${agent.habilitations}</small></td>
+                <td class="text-center ${habClass}">
+                    <small>${agent.date_dernière_habilitation}</small>
+                </td>
+                <td class="text-center">
+                    <div class="actions">
+                        <button class="btn-icon" onclick="openModalEdit(${originalIndex})" title="Modifier">
+                            ✏️
+                        </button>
+                        <button class="btn-icon delete" onclick="openConfirmDelete(${originalIndex})" title="Supprimer">
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            return row;
+        }
+
+        function updatePagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            const pageInfo = document.getElementById("pageInfo");
+            if (pageInfo) {
+                pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+            }
+
+            const prevBtn = document.getElementById("prevBtn");
+            if (prevBtn) {
+                prevBtn.disabled = currentPage <= 1;
+            }
+
+            const nextBtn = document.getElementById("nextBtn");
+            if (nextBtn) {
+                nextBtn.disabled = currentPage >= totalPages;
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayAgents();
+            }
+        }
+
+        function nextPage() {
+            const filteredAgents = getFilteredAgents();
+            const totalPages = Math.ceil(filteredAgents.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayAgents();
+            }
+        }
+
+        function updateStats(totalVisible) {
+            const agentCount = document.getElementById("agentCount");
+            if (agentCount) {
+                agentCount.textContent = `${totalVisible || agents.length} agent${totalVisible !== 1 ? "s" : ""}`;
+            }
+        }
+
+        function openModalAdd(event) {
+            if (event) event.preventDefault();
+            editingIndex = null;
+            document.getElementById("modalTitle").textContent = "Ajouter un agent";
+            document.getElementById("agentForm").reset();
+            showModal();
+        }
+
+        function openModalEdit(index) {
+            editingIndex = index;
+            const agent = agents[index];
+
+            document.getElementById("modalTitle").textContent = "Modifier un agent";
+            document.getElementById("formNom").value = agent.nom;
+            document.getElementById("formPrenom").value = agent.prénom;
+            document.getElementById("formService").value = agent.service;
+            document.getElementById("formGrade").value = agent.grade;
+            document.getElementById("formJoursConges").value = agent.jours_congés_pris;
+            document.getElementById("formSolde").value = agent.solde_congés;
+            document.getElementById("formHabilitations").value = agent.habilitations;
+            document.getElementById("formDateHab").value = agent.date_dernière_habilitation;
+
+            showModal();
+        }
+
+        function showModal() {
+            const modal = document.getElementById("agentModal");
+            if (modal) {
+                modal.classList.add("show");
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("agentModal");
+            if (modal) {
+                modal.classList.remove("show");
+            }
+            editingIndex = null;
+        }
+
+        function openConfirmDelete(index) {
+            deleteConfirmIndex = index;
+            const agent = agents[index];
+            const confirmModal = document.getElementById("confirmModal");
+            const confirmMessage = document.getElementById("confirmMessage");
+            if (confirmMessage) {
+                confirmMessage.textContent = `Voulez-vous supprimer ${agent.prénom} ${agent.nom} ?`;
+            }
+            if (confirmModal) {
+                confirmModal.classList.add("show");
+            }
+        }
+
+        function closeConfirmModal() {
+            const confirmModal = document.getElementById("confirmModal");
+            if (confirmModal) {
+                confirmModal.classList.remove("show");
+            }
+            deleteConfirmIndex = null;
+        }
+
+        function confirmDelete() {
+            if (deleteConfirmIndex === null) return;
+
+            fetch(`/api/agent/delete/${deleteConfirmIndex}`, { method: "DELETE" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        agents = data.agents;
+                        closeConfirmModal();
+                        currentPage = 1;
+                        displayAgents();
+                        showNotification(data.message, "success");
+                    } else {
+                        showNotification(data.message, "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur:", error);
+                    showNotification("Erreur lors de la suppression", "error");
+                });
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const donnees = {
+                nom: document.getElementById("formNom").value.trim(),
+                prénom: document.getElementById("formPrenom").value.trim(),
+                service: document.getElementById("formService").value,
+                grade: document.getElementById("formGrade").value,
+                jours_congés_pris: document.getElementById("formJoursConges").value || "0",
+                solde_congés: document.getElementById("formSolde").value || "0",
+                habilitations: document.getElementById("formHabilitations").value.trim(),
+                date_dernière_habilitation: document.getElementById("formDateHab").value.trim()
+            };
+
+            if (!donnees.nom || !donnees.prénom || !donnees.service || !donnees.grade) {
+                showNotification("Veuillez remplir tous les champs obligatoires", "warning");
+                return;
+            }
+
+            if (editingIndex !== null) {
+                updateAgent(editingIndex, donnees);
+            } else {
+                addAgent(donnees);
+            }
+        }
+
+        function addAgent(donnees) {
+            fetch("/api/agent/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(donnees)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    agents = data.agents;
+                    closeModal();
+                    currentPage = 1;
+                    displayAgents();
+                    showNotification(data.message, "success");
+                } else {
+                    showNotification(data.message, "error");
+                }
+            })
+            .catch(error => {
+                console.error("Erreur:", error);
+                showNotification("Erreur lors de l''ajout", "error");
+            });
+        }
+
+        function updateAgent(index, donnees) {
+            fetch(`/api/agent/update/${index}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(donnees)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    agents = data.agents;
+                    closeModal();
+                    displayAgents();
+                    showNotification(data.message, "success");
+                } else {
+                    showNotification(data.message, "error");
+                }
+            })
+            .catch(error => {
+                console.error("Erreur:", error);
+                showNotification("Erreur lors de la modification", "error");
+            });
+        }
+
+        function exportCSV() {
+            const filteredAgents = getFilteredAgents();
+
+            if (filteredAgents.length === 0) {
+                showNotification("Aucune donnee a exporter", "warning");
+                return;
+            }
+
+            const entetes = ["nom", "prénom", "service", "grade", "jours_congés_pris", "solde_congés", "habilitations", "date_dernière_habilitation"];
+            let csv = entetes.join(",") + "\n";
+
+            filteredAgents.forEach(agent => {
+                const row = [
+                    agent.nom,
+                    agent.prénom,
+                    agent.service,
+                    agent.grade,
+                    agent.jours_congés_pris,
+                    agent.solde_congés,
+                    `"${agent.habilitations}"`,
+                    agent.date_dernière_habilitation
+                ];
+                csv += row.join(",") + "\n";
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute("href", url);
+            link.setAttribute("download", `agents_${new Date().toISOString().split("T")[0]}.csv`);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification("Export CSV reussi", "success");
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.getElementById("notification");
+            if (!notification) return;
+
+            notification.textContent = message;
+            notification.className = "notification show " + type;
+
+            setTimeout(() => {
+                notification.classList.remove("show");
+            }, 3000);
+        }
+
+        function navigateTo(event, path) {
+            event.preventDefault();
+            window.location.href = path;
+        }
+    </script>
+</body>
+</html>

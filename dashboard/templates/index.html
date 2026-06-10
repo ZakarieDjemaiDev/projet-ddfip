@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord RH - DDFiP Moselle</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for("static", filename="style.css") }}">
+</head>
+<body>
+    <!-- ==================== LAYOUT ==================== -->
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">RH</div>
+                <div class="logo-text">DDFiP<br>Moselle</div>
+            </div>
+
+            <nav class="nav">
+                <a href="/" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/agents" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>Agents</span>
+                </a>
+                <a href="#" class="nav-item" onclick="openModalAdd(event)">
+                    <span class="nav-icon">➕</span>
+                    <span>Ajouter</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <small>v1.0 Pro</small>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Tableau de bord RH</h1>
+                    <p class="date-display">{{ date_du_jour }}</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" onclick="openModalAdd()">
+                        <span>➕</span> Ajouter un agent
+                    </button>
+                </div>
+            </header>
+
+            <!-- ==================== TAB : DASHBOARD ==================== -->
+            <div id="dashboard-tab" class="tab-content active">
+                <!-- KPIs -->
+                <section class="kpis">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <h3>Effectif total</h3>
+                            <span class="kpi-icon">👥</span>
+                        </div>
+                        <div class="kpi-value">{{ kpis.total }}</div>
+                        <div class="kpi-subtitle">agents</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <h3>Conges pris (moy.)</h3>
+                            <span class="kpi-icon">🏖️</span>
+                        </div>
+                        <div class="kpi-value">{{ kpis.conges_moyen }}</div>
+                        <div class="kpi-subtitle">jours par agent</div>
+                    </div>
+
+                    <div class="kpi-card warning">
+                        <div class="kpi-header">
+                            <h3>Alertes conges</h3>
+                            <span class="kpi-icon">🔴</span>
+                        </div>
+                        <div class="kpi-value">{{ kpis.alertes_conges }}</div>
+                        <div class="kpi-subtitle">solde &lt; 5 jours</div>
+                    </div>
+
+                    <div class="kpi-card danger">
+                        <div class="kpi-header">
+                            <h3>Habilitations</h3>
+                            <span class="kpi-icon">🔐</span>
+                        </div>
+                        <div class="kpi-value">{{ kpis.habilitations_a_renouveler }}</div>
+                        <div class="kpi-subtitle">a renouveler</div>
+                    </div>
+                </section>
+
+                <!-- Graphiques -->
+                <section class="charts-grid">
+                    <div class="chart-card">
+                        <h2>Conges par service</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="chartConges" width="400" height="250"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h2>Repartition des agents</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="chartRepartition" width="400" height="250"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ==================== TAB : AGENTS ==================== -->
+            <div id="agents-tab" class="tab-content">
+                <!-- Filtres et recherche -->
+                <section class="filters-section">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Rechercher par nom, prenom..." class="search-input">
+                        <span class="search-icon">🔍</span>
+                    </div>
+
+                    <div class="filters">
+                        <select id="serviceFilter" class="filter-select">
+                            <option value="">Tous les services</option>
+                            {% for service in services %}
+                            <option value="{{ service }}">{{ service }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="alertesOnlyFilter">
+                            <span>Alertes uniquement</span>
+                        </label>
+                    </div>
+
+                    <div class="export-buttons">
+                        <button class="btn btn-secondary" onclick="exportCSV()">
+                            <span>📥</span> CSV
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Tableau agents -->
+                <section class="table-section">
+                    <div class="table-header">
+                        <h2>Liste des agents</h2>
+                        <div class="table-stats">
+                            <span id="agentCount">0 agents</span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="agentsTable" class="agents-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prenom</th>
+                                    <th>Service</th>
+                                    <th>Grade</th>
+                                    <th class="text-center">Conges pris</th>
+                                    <th class="text-center">Solde</th>
+                                    <th>Habilitations</th>
+                                    <th class="text-center">Derniere hab.</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Rempli par JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button id="prevBtn" class="btn btn-small" onclick="previousPage()">Precedent</button>
+                        <span id="pageInfo" class="page-info">Page 1</span>
+                        <button id="nextBtn" class="btn btn-small" onclick="nextPage()">Suivant</button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== MODALES ==================== -->
+
+    <!-- Modal Ajouter/Modifier Agent -->
+    <div id="agentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Ajouter un agent</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="agentForm" class="agent-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom *</label>
+                        <input type="text" id="formNom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prenom *</label>
+                        <input type="text" id="formPrenom" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Service *</label>
+                        <select id="formService" required>
+                            <option value="">-- Selectionnez --</option>
+                            {% for service in services %}
+                            <option value="{{ service }}">{{ service }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Grade *</label>
+                        <select id="formGrade" required>
+                            <option value="">-- Selectionnez --</option>
+                            {% for grade in grades %}
+                            <option value="{{ grade }}">{{ grade }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Jours conges pris</label>
+                        <input type="number" id="formJoursConges" min="0" max="30" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Solde conges</label>
+                        <input type="number" id="formSolde" min="0" max="30" value="0">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Habilitations (separees par |)</label>
+                    <textarea id="formHabilitations" placeholder="Secret defense | Donnees sensibles | ..."></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Derniere habilitation (JJ/MM/AAAA)</label>
+                    <input type="text" id="formDateHab" placeholder="01/01/2024">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Valider</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation Suppression -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content modal-small">
+            <h2>Confirmation</h2>
+            <p id="confirmMessage">Voulez-vous supprimer cet agent ?</p>
+            <div class="form-actions">
+                <button class="btn btn-danger" onclick="confirmDelete()">Supprimer</button>
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== NOTIFICATIONS ==================== -->
+    <div id="notification" class="notification"></div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="{{ url_for("static", filename="script.js") }}"></script>
+
+    <script>
+        // Donnees des graphiques depuis le template Flask (en JSON)
+        let statsServices = {};
+        let repartitionServices = {};
+
+        try {
+            const barresData = {{ donnees_barres | safe }};
+            const donutData = {{ donnees_donut | safe }};
+
+            if (barresData && typeof barresData === 'object') {
+                statsServices = barresData;
+            }
+            if (donutData && typeof donutData === 'object') {
+                repartitionServices = donutData;
+            }
+        } catch(e) {
+            console.error("[CHART INIT] Erreur lors du parsing des donnees:", e);
+        }
+
+        console.log("[CHART DEBUG] Stats Services:", statsServices);
+        console.log("[CHART DEBUG] Repartition Services:", repartitionServices);
+        console.log("[CHART DEBUG] Chart.js loaded:", typeof Chart !== "undefined");
+
+        // Initialiser les graphiques quand le DOM est pret
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("[INIT] DOM Loaded - Initializing charts...");
+            setTimeout(function() {
+                initCharts();
+                loadAgents();
+            }, 100);
+        });
+
+        // Debug: afficher les canvas disponibles
+        window.addEventListener("load", function() {
+            console.log("[CANVAS CHECK]");
+            console.log("  Canvas #chartConges:", document.getElementById("chartConges"));
+            console.log("  Canvas #chartRepartition:", document.getElementById("chartRepartition"));
+        });
+    </script>
+</body>
+</html>

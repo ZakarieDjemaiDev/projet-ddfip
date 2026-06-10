@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Flask
+instance/
+.webassets-cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Donnees locales
+*.sqlite
+*.db
+*.ods.bak
+
+# Logs
+*.log
+
+# Conversations IA & Prompts
+*.prompt.txt
+prompt_*.txt
+claude_*.txt
+*_prompt.md
+notes_ia.*
+conseils.*
+todo_claude.*
+.cursorrules
+*.conversation.*
+
+# Environment
+.env

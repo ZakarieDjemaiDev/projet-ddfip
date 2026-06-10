@@ -1,0 +1,161 @@
+# TEST DU PROJET - CHECKLIST
+
+Cette checklist vous aide a verifier que tout fonctionne correctement
+avant de presenter le projet en entretien.
+
+## AVANT LE TEST
+
+[ ] Python 3.7+ installe
+    ! python --version
+
+[ ] Flask installe
+    ! pip install flask
+
+[ ] Vous etes dans le bon repertoire
+    ! cd C:\Users\djuuz\projet-ddfip
+
+---
+
+## TEST 1 : GENERATION DE DONNEES
+
+Commande :
+  python generate_data.py
+
+Verification :
+[ ] Le script affiche "[OK] 30 agents generes..."
+[ ] Un fichier data/agents.csv a ete cree
+[ ] Le fichier contient 30 lignes + 1 en-tete
+
+Si erreur :
+  - Verifiez l'encodage UTF-8
+  - Relanc : python generate_data.py
+
+---
+
+## TEST 2 : RAPPORT D'ANALYSE
+
+Commande :
+  python rapport.py
+
+Verification :
+[ ] Le rapport affiche "RAPPORT D'ANALYSE RH"
+[ ] Il y a [TOTAL] : 30 agents
+[ ] Il y a [STATS] : 5 services differents
+[ ] Il y a [ALERTE] : agents avec solde faible
+[ ] Il y a [SECURITE] : agents avec habilitations a renouveler
+
+Chiffres attendus (approximatifs) :
+  - Total agents : 30
+  - Moyenne conges : 10-20 jours
+  - Soldes faibles : 5-10 agents
+  - Habilitations expirees : 20-30 agents (normal, dates 2022-2024)
+
+Si erreur :
+  - Verifiez que data/agents.csv existe
+  - Relanc : python rapport.py
+
+---
+
+## TEST 3 : DASHBOARD FLASK
+
+Commande :
+  python dashboard/app.py
+
+Verification :
+[ ] Le serveur affiche "Running on http://127.0.0.1:5000"
+[ ] Ouvrez http://127.0.0.1:5000 dans un navigateur
+[ ] La page charge sans erreur
+
+Verifiez chaque element :
+[ ] En-tete "Tableau de bord RH"
+[ ] 3 KPI cards en haut
+    - Nombre d'agents
+    - Moyenne des conges
+    - Habilitations a renouveler
+[ ] Graphique barres "Conges par service"
+[ ] Graphique camembert "Repartition des agents"
+[ ] Tableau complet des agents
+    - En-tetes : Nom, Prenom, Service, Grade, etc
+    - Lignes avec couleurs : rien en rouge/orange = normal
+    - Colonna "Solde" : si < 5, fond rouge
+    - Colonne "Habilitations" : affiche la liste
+
+[ ] Design responsive (redimensionnez la fenetre)
+
+Pour arreter le serveur :
+  Ctrl+C
+
+Si erreur :
+  - Verifiez que Flask est installe : pip install flask
+  - Verifiez que data/agents.csv existe
+  - Relanc : python dashboard/app.py
+
+---
+
+## TEST 4 : MACRO LIBREOFFICE (OPTIONNEL)
+
+Pour tester la macro :
+
+1. Ouvrez LibreOffice Calc
+2. Allez dans Outils > Macros > Organiser les macros > LibreOffice Basic
+3. Creez un nouveau module
+4. Copiez le contenu de macro_suivi.bas
+5. Enregistrez
+
+Ensuite :
+[ ] Executez ImporterDonnees()
+[ ] Une feuille "Agents" doit etre creee
+[ ] Les donnees doivent etre importees (30 lignes)
+[ ] Les en-tetes doivent etre en gras + gris
+[ ] Les colonnes doivent etre ajustees
+[ ] Les lignes doivent avoir des couleurs alternees
+
+---
+
+## TEST 5 : PRESENTATION ENTRETIEN
+
+Une fois que tout fonctionne :
+
+[ ] Genarez de nouvelles donnees
+    python generate_data.py
+
+[ ] Affcihez le rapport
+    python rapport.py
+    -> Dites : "Regarde, tous les agents en alerte"
+
+[ ] Lancez le dashboard
+    python dashboard/app.py
+    -> Montrez le graphique, les KPIs
+    -> Dites : "C'est un seul clic pour cette synthese"
+
+[ ] Mentionnez la macro
+    -> "On peut aussi le faire dans LibreOffice"
+
+---
+
+## FICHE DE SECOURS
+
+Probleme : "Erreur UnicodeEncodeError"
+Solution : C'est normal sur Windows PowerShell. Les donnes sont creees,
+          juste l'affichage a des soucis. Ignorez.
+
+Probleme : "Port 5000 deja utilise"
+Solution : python dashboard/app.py --port 5001
+          Ou : netstat -ano | findstr :5000 (voir qui utilise)
+
+Probleme : "Module flask not found"
+Solution : pip install flask
+
+Probleme : "Fichier data/agents.csv not found"
+Solution : D'abord : python generate_data.py
+
+---
+
+NOTES PERSONNELLES :
+
+[ ] J'ai teste le projet moi-meme
+[ ] Les donnees se generent bien
+[ ] Le rapport fonctionne
+[ ] Le dashboard charge sur 127.0.0.1:5000
+[ ] J'ai le texte de presentation pret
+[ ] J'ai des idees pour les questions d'entretien

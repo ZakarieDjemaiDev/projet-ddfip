@@ -1,0 +1,93 @@
+================================================================================
+PROJET DDFiP MOSELLE - TABLEAU DE BORD RH
+Candidature en alternance - Transformation numerique RH
+================================================================================
+
+FICHIERS DU PROJET :
+  - generate_data.py        : Generateur de donnees fictives (30 agents)
+  - rapport.py              : Script d'analyse en ligne de commande
+  - dashboard/app.py        : Serveur Flask pour le dashboard web
+  - dashboard/templates/    : Template HTML du dashboard
+  - dashboard/static/       : Styles CSS
+  - macro_suivi.bas         : Macro LibreOffice Calc
+  - README.md               : Documentation complete
+
+================================================================================
+DEMARRAGE RAPIDE
+================================================================================
+
+OPTION 1 : Lancer avec le fichier batch (Windows)
+  -> Double-cliquez sur DEMARRER.bat
+
+OPTION 2 : Manuel (PowerShell/Terminal)
+
+  1. Installer Flask (une seule fois) :
+     pip install flask
+
+  2. Generer les donnees :
+     python generate_data.py
+
+  3. Afficher le rapport d'analyse :
+     python rapport.py
+
+  4. Lancer le dashboard web :
+     python dashboard/app.py
+     -> Ouvrez http://127.0.0.1:5000
+
+================================================================================
+UTILISER LA MACRO LIBREOFFICE
+================================================================================
+
+1. Ouvrez LibreOffice Calc
+2. Allez dans Outils > Macros > Organiser les macros > LibreOffice Basic
+3. Creez un nouveau module
+4. Copiez-collez le contenu de macro_suivi.bas
+5. Enregistrez
+6. Executez "ImporterDonnees" pour importer data/agents.csv
+
+La macro :
+  - Importe le CSV dans une feuille "Agents"
+  - Met en format les en-tetes (gras, gris)
+  - Alterne les couleurs des lignes
+  - Colore en rouge les soldes < 5 jours
+  - Colore en orange les habilitations > 2 ans
+  - Exporte en PDF
+
+================================================================================
+CONTENU DES DONNEES
+================================================================================
+
+Chaque agent a les proprietes suivantes :
+  - nom, prenom : noms francais realistes
+  - service : Fiscalite, Gestion publique, RH, Controle fiscal, Communication
+  - grade : Contractuel, Titulaire, Cadre A, Cadre B
+  - jours_conges_pris : 5-25 jours
+  - solde_conges : 0-18 jours restants
+  - habilitations : Secret defense, Donnees sensibles, etc.
+  - date_derniere_habilitation : date entre 2 et 4 ans
+
+================================================================================
+PRESENTATION EN ENTRETIEN
+================================================================================
+
+Voici les points cles a expliquer :
+
+1. PYTHON & AUTOMATISATION
+   "J'ai cree un generateur de donnees realistes et un script d'analyse 
+    qui traite automatiquement les alertes RH : identification des conges 
+    faibles, verification des habilitations expirees."
+
+2. MACROS LIBREOFFICE
+   "La macro demontre comment automatiser les taches repetitives dans Calc :
+    import de donnees, mise en forme, coloration selon les regles metier 
+    (alertes)."
+
+3. DASHBOARD & DATAVISUALISATION
+   "Le dashboard Flask montre comment rendre les donnees accessibles avec 
+    des KPIs et graphiques interactifs."
+
+4. STACK TECHNIQUE
+   "Tout est fait avec les outils standards : Python, LibreOffice, Flask.
+    Rien qui ne tienne dans une petite infra administrative."
+
+================================================================================
