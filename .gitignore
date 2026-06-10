@@ -46,3 +46,6 @@ todo_claude.*
 
 # Environment
 .env
+
+# Text files
+*.txt
