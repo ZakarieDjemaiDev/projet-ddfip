@@ -1,5 +1,0 @@
-# Dependances du projet DDFiP
-# Installation : pip install -r requirements.txt
-
-Flask==3.1.2
-Werkzeug==3.1.4
